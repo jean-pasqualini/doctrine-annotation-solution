@@ -35,13 +35,16 @@ class Area
     public $parent;
 
     /**
-     * @SequencedCode(tree=true)
+     * @SequencedCode(
+     *     tree=true,
+     *     comment="on génère une séquence de type AA qui est propre à chaque noeud parent/entity"
+     * )
      * @ORM\Column(type="string", nullable=true)
      */
     public $code;
 
     /**
-     * @EntityInherit()
+     * @EntityInherit(comment="on hérite de la boutique du parent")
      */
     public $entity;
 

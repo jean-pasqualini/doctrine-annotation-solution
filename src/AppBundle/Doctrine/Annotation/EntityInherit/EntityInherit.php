@@ -16,5 +16,5 @@ use Doctrine\Common\Annotations\Annotation;
  */
 class EntityInherit extends Annotation
 {
-
+    public $comment = '';
 }

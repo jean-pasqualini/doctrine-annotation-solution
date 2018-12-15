@@ -18,4 +18,5 @@ use Doctrine\Common\Annotations\Annotation;
 class SequencedCode extends Annotation
 {
     public $tree = false;
+    public $comment = '';
 }

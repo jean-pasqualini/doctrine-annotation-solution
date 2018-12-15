@@ -35,6 +35,12 @@ class Annotation extends AbstractAnnotationDriver
 
         foreach ($requiredMethods as $requiredMethod) {
             if (!in_array($requiredMethod, $methods)) {
+                $config['error'] = sprintf(
+                    'unabled to use %s becasue method %s is not implemented by %s',
+                    EntityInherit::class,
+                    $requiredMethod,
+                    $meta->name
+                );
                 return;
             }
         }

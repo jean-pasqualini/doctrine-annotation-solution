@@ -32,11 +32,9 @@ class DemoCommand extends Command
     {
         $parent = new Area();
         $parent->entity = 'Auchan';
-        $parent->code = 'AA';
 
         $area = new Area();
         $area->parent = $parent;
-        $area->code = 'BB';
 
         $this->em->persist($area);
         $this->em->flush();

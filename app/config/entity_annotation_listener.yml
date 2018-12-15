@@ -2,6 +2,8 @@ services:
     AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener:
         public: true
         autowire: true
+        arguments:
+            $strict: '%kernel.debug%'
         calls:
             - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
         tags:
@@ -10,6 +12,8 @@ services:
     AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
         public: true
         autowire: true
+        arguments:
+            $strict: '%kernel.debug%'
         calls:
             - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
         tags:

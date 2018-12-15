@@ -9,6 +9,7 @@
 namespace AppBundle\Entity;
 
 use AppBundle\Doctrine\Annotation\EntityInherit\EntityInherit;
+use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -18,8 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *     "AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener",
  *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener"
  * })
- * //@ORM\LifecycleSequenced("EntityInherit")
- * @Gedmo\Tree(type="materializedPath")
  */
 class Area
 {
@@ -32,21 +31,14 @@ class Area
 
     /**
      * @ORM\ManyToOne(targetEntity="Area", cascade={"persist"})
-     * @Gedmo\TreeParent
      */
     public $parent;
 
     /**
-     * @Gedmo\TreePathSource()
+     * @SequencedCode(tree=true)
      * @ORM\Column(type="string", nullable=true)
      */
     public $code;
-
-    /**
-     * @Gedmo\TreePath(separator="-", appendId=false, endsWithSeparator=false)
-     * @ORM\Column(type="string", nullable=true)
-     */
-    public $path;
 
     /**
      * @EntityInherit()
@@ -71,5 +63,10 @@ class Area
     public function setEntity($entity)
     {
         $this->entity = $entity;
+    }
+
+    public function setCode($code)
+    {
+        $this->code = $code;
     }
 }

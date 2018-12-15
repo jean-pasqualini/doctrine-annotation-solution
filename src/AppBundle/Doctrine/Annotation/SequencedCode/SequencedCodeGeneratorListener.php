@@ -17,6 +17,9 @@ class SequencedCodeGeneratorListener extends MappedEventListener
     /** @var ObjectManager */
     private $om;
 
+    /** @var bool */
+    private $strict;
+
     protected function getNamespace()
     {
         return __NAMESPACE__;
@@ -27,15 +30,29 @@ class SequencedCodeGeneratorListener extends MappedEventListener
         return [];
     }
 
-    public function __construct(ObjectManager $om)
+    public function __construct(ObjectManager $om, bool $strict)
     {
         $this->om = $om;
+        $this->strict = $strict;
     }
 
-    public function prePersist($entity)
+    protected function factoryEntityWrapper($entity, $config)
     {
-        $config = $this->getConfiguration($this->om, get_class($entity));
+        return new EntityWrapper($entity, $config);
+    }
 
-        dump(get_class($entity));
+    public function prePersist($subject)
+    {
+        $config = $this->getConfiguration($this->om, get_class($subject));
+
+        if (!$config) {
+            return;
+        }
+
+        $entity = $this->factoryEntityWrapper($subject, $config['sequenced_code']);
+
+        $generatedCode = (string) $entity->getEntity();
+
+        $entity->setCode($generatedCode);
     }
 }

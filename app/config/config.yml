@@ -1,7 +1,6 @@
 imports:
     - { resource: parameters.yml }
     - { resource: services.yml }
-    - { resource: entity_annotation_bind.yml }
     - { resource: entity_annotation_listener.yml }
 
 # Put parameters here that don't need to change on each machine where the app is deployed

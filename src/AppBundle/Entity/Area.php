@@ -19,6 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener"
  * })
  * //@ORM\LifecycleSequenced("EntityInherit")
+ * @Gedmo\Tree(type="materializedPath")
  */
 class Area
 {
@@ -31,16 +32,19 @@ class Area
 
     /**
      * @ORM\ManyToOne(targetEntity="Area", cascade={"persist"})
+     * @Gedmo\TreeParent
      */
     public $parent;
 
     /**
      * @Gedmo\TreePathSource()
+     * @ORM\Column(type="string", nullable=true)
      */
     public $code;
 
     /**
-     * @Gedmo\TreePath(separator=" - ")
+     * @Gedmo\TreePath(separator="-", appendId=false, endsWithSeparator=false)
+     * @ORM\Column(type="string", nullable=true)
      */
     public $path;
 

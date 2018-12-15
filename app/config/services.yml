@@ -22,15 +22,3 @@ services:
         # but if a service is unused, it's removed anyway
         exclude: '../../src/AppBundle/{Entity,Repository,Tests}'
 
-    AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener:
-        public: true
-        tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }
-    AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
-        public: true
-        tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }
-    # add more services, or override services that need manual wiring
-    # AppBundle\Service\ExampleService:
-    #     arguments:
-    #         $someArgument: 'some_value'

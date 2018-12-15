@@ -9,10 +9,10 @@
 namespace AppBundle\Doctrine\Annotation\SequencedCode;
 
 
+use AppBundle\Doctrine\Annotation\MappedEventListener;
 use Doctrine\Common\Persistence\ObjectManager;
-use Gedmo\Mapping\MappedEventSubscriber;
 
-class SequencedCodeGeneratorListener extends MappedEventSubscriber
+class SequencedCodeGeneratorListener extends MappedEventListener
 {
     /** @var ObjectManager */
     private $om;
@@ -36,6 +36,6 @@ class SequencedCodeGeneratorListener extends MappedEventSubscriber
     {
         $config = $this->getConfiguration($this->om, get_class($entity));
 
-        dump($config);
+        dump(get_class($entity));
     }
 }

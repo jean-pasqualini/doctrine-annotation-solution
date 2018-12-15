@@ -8,12 +8,10 @@
 
 namespace AppBundle\Doctrine\Annotation\EntityInherit;
 
+use AppBundle\Doctrine\Annotation\MappedEventListener;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Gedmo\Mapping\MappedEventSubscriber;
-use Symfony\Component\HttpKernel\KernelInterface;
 
-class EntityInheritListener extends MappedEventSubscriber
+class EntityInheritListener extends MappedEventListener
 {
     /** @var ObjectManager */
     private $om;
@@ -38,6 +36,13 @@ class EntityInheritListener extends MappedEventSubscriber
     {
         $config = $this->getConfiguration($this->om, get_class($entity));
 
-        dump($config);
+        dump('----',$config);
+        if (!($config['entity_inherit'] ?? false)) {
+            return;
+        }
+
+        if ($entity->getParent()) {
+            $entity->setEntity($entity->getParent()->getEntity());
+        }
     }
 }

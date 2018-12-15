@@ -1,0 +1,16 @@
+services:
+    AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener:
+        public: true
+        autowire: true
+        calls:
+            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
+        tags:
+            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }
+
+    AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
+        public: true
+        autowire: true
+        calls:
+            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
+        tags:
+            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }

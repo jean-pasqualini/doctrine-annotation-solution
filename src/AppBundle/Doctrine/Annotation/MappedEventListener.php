@@ -2,6 +2,7 @@
 
 namespace AppBundle\Doctrine\Annotation;
 
+use AppBundle\Doctrine\DomainObject;
 use AppBundle\Entity\Area;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
@@ -180,30 +181,6 @@ abstract class MappedEventListener
      * @return string
      */
     abstract protected function getNamespace();
-
-    protected function isNew(Area $area)
-    {
-        return empty($this->em->getUnitOfWork()->getOriginalEntityData($area));
-    }
-
-    protected function isUpdatedFields($subject, array $fields)
-    {
-        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
-
-        foreach ($fields as $field) {
-            if (isset($changeSet[$field])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function isUpdated($subject)
-    {
-        return !empty($this->em->getUnitOfWork()->getEntityChangeSet($subject));
-    }
-
 
     /**
      * @param $config

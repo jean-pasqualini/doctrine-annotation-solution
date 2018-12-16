@@ -10,6 +10,7 @@ namespace AppBundle\Doctrine\Annotation\SequencedCode;
 
 
 use AppBundle\Doctrine\Annotation\MappedEventListener;
+use AppBundle\Doctrine\DomainObject;
 use Doctrine\Common\Persistence\ObjectManager;
 
 class SequencedCodeGeneratorListener extends MappedEventListener
@@ -18,9 +19,23 @@ class SequencedCodeGeneratorListener extends MappedEventListener
      * @param $subject
      * @return bool
      */
-    public function isParentNodeChange($subject): bool
+    protected function isParentNodeChange(DomainObject $subject): bool
     {
-        return $this->isUpdatedFields($subject, ['entity', 'parent']);
+        return $subject->isPropertyChanged('parent');
+    }
+
+    protected function isNew(DomainObject $subject): bool
+    {
+        return $subject->isNew();
+    }
+
+    /**
+     * @param $subject
+     * @return mixed
+     */
+    protected function isCodeAlreadyUpdated(DomainObject $subject)
+    {
+        return $subject->isPropertyChanged('code');
     }
 
     protected function getNamespace()
@@ -35,7 +50,7 @@ class SequencedCodeGeneratorListener extends MappedEventListener
 
     public function preFlush($subject)
     {
-        if ($this->isUpdatedFields($subject, ['code'])) {
+        if ($this->isCodeAlreadyUpdated($subject)) {
             return;
         }
 

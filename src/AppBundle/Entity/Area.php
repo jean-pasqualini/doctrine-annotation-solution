@@ -33,14 +33,16 @@ class Area extends DomainObject
     public $id;
 
     /**
+     * @var Area
      * @ORM\ManyToOne(targetEntity="Area", inversedBy="children", cascade={"persist"})
      */
-    public $parent;
+    protected $parent;
 
     /**
+     * @var ArrayCollection
      * @ORM\OneToMany(targetEntity="Area", mappedBy="parent", cascade={"persist"})
      */
-    public $children;
+    protected $children;
 
     /**
      * @SequencedCode(
@@ -78,6 +80,35 @@ class Area extends DomainObject
         return $this->parent;
     }
 
+    public function setParent(Area $parent)
+    {
+        if ($this->parent === $parent) {
+            return;
+        }
+        if ($this->parent) {
+            $this->parent->removeChildren($this);
+        }
+
+        $this->propertyChanged('parent');
+
+        $this->parent = $parent;
+        $parent->addChildren($this);
+    }
+
+    public function addChildren(Area $child)
+    {
+        if ($this->children->contains($child)) {
+            return;
+        }
+        $this->children->add($child);
+        $child->setParent($this);
+    }
+
+    public function removeChildren(Area $child)
+    {
+        $this->children->removeElement($child);
+    }
+
     public function getEntity()
     {
         return $this->entity;
@@ -85,14 +116,13 @@ class Area extends DomainObject
 
     public function setEntity($entity)
     {
-        dump('bb');
-        $this->propertyChanged('entity', $this->entity, $entity);
+        $this->propertyChanged('entity');
         $this->entity = $entity;
     }
 
     public function setCode($code)
     {
-        $this->propertyChanged('code', $this->code, $code);
+        $this->propertyChanged('code');
         $this->code = $code;
     }
 
@@ -138,6 +168,7 @@ class Area extends DomainObject
      */
     public function setPath($path): void
     {
+        $this->propertyChanged('path');
         $this->path = $path;
     }
 

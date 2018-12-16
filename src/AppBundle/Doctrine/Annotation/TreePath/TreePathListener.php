@@ -10,18 +10,28 @@ namespace AppBundle\Doctrine\Annotation\TreePath;
 
 
 use AppBundle\Doctrine\Annotation\MappedEventListener;
+use AppBundle\Doctrine\DomainObject;
 use AppBundle\Entity\Area;
 use Doctrine\Common\PropertyChangedListener;
 
-class TreePathListener extends MappedEventListener implements PropertyChangedListener
+class TreePathListener extends MappedEventListener
 {
     /**
      * @param Area $subject
      * @return bool
      */
-    public function isCodeChange(Area $subject): bool
+    protected function isCodeChange(DomainObject $subject): bool
     {
-        return $this->isUpdatedFields($subject, ['code']);
+        return $subject->isPropertyChanged('code');
+    }
+
+    /**
+     * @param Area $subject
+     * @return bool
+     */
+    protected function isAlreadyPathUpdated(DomainObject $subject): bool
+    {
+        return $subject->isPropertyChanged('path');
     }
 
     protected function getNamespace()
@@ -29,28 +39,17 @@ class TreePathListener extends MappedEventListener implements PropertyChangedLis
         return __NAMESPACE__;
     }
 
-    public function postLoad(Area $subject)
-    {
-        $subject->addPropertyChangedListener($this);
-    }
-
-    public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
-    {
-        if ('code' === $propertyName) {
-            exit('a');
-        }
-    }
-
     public function preFlush(Area $subject)
     {
-        if ($this->isUpdatedFields($subject, ['path'])) {
+        if ($this->isAlreadyPathUpdated($subject)) {
             return;
         }
 
-        if ($this->isNew($subject) || $this->isCodeChange($subject)) {
+        if ($this->isCodeChange($subject)) {
             $this->updatePath($subject);
             $this->updateChildrenPath($subject);
         }
+
     }
 
     private function updatePath(Area $subject)
@@ -64,7 +63,9 @@ class TreePathListener extends MappedEventListener implements PropertyChangedLis
         $children = $subject->getChildren();
 
         foreach ($children as $child) {
-            $child->setPath($this->generatePath($child));
+            if ($this->isCodeChange($child)) {
+                $child->setPath($this->generatePath($child));
+            }
         }
     }
 

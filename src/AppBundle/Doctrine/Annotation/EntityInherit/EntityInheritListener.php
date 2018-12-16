@@ -10,6 +10,7 @@ namespace AppBundle\Doctrine\Annotation\EntityInherit;
 
 use AppBundle\Doctrine\Annotation\BadConfigurationAnnotationException;
 use AppBundle\Doctrine\Annotation\MappedEventListener;
+use AppBundle\Doctrine\DomainObject;
 use Doctrine\Common\Persistence\ObjectManager;
 
 class EntityInheritListener extends MappedEventListener
@@ -23,9 +24,9 @@ class EntityInheritListener extends MappedEventListener
      * @param $entity
      * @throws BadConfigurationAnnotationException
      */
-    public function preFlush($entity)
+    public function preFlush(DomainObject $entity)
     {
-        if ($this->isNew($entity)) {
+        if ($entity->isNew()) {
             $config = $this->getConfiguration($entity);
 
             if ($this->isStrictMode()) {

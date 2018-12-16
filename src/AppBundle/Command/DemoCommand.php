@@ -31,40 +31,55 @@ class DemoCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->em->getConfiguration()->setSQLLogger(new EchoSQLLogger());
+        $this->delete();
+        $this->create();
+        $this->update();
+    }
 
+    public function delete()
+    {
+        /** @var Area[] $areas */
+        $areas = $this->em->getRepository(Area::class)->findAll();
+
+        foreach ($areas as $area) {
+            $this->em->remove($area);
+        }
+
+        $this->em->flush();
+    }
+
+    public function create()
+    {
+
+        dump('-------------> Create');
         $shop = new Area('shop');
         $shop->entity = 'Auchan';
 
         $firstFloor = new Area('firstFloor');
-        $firstFloor->parent = $shop;
-        $shop->children->add($firstFloor);
-
         $secondFloor = new Area('secondFloor');
-        $secondFloor->parent = $shop;
-        $shop->children->add($secondFloor);
+        $shop->addChildren($firstFloor);
+        $shop->addChildren($secondFloor);
 
         $rayon = new Area('rayon');
-        $rayon->parent = $firstFloor;
-        $firstFloor->children->add($rayon);
+        $firstFloor->addChildren($rayon);
 
         $this->em->persist($shop);
         $this->em->flush();
 
         dump($rayon->debug());
 
-        $rayonId = $rayon->id;
-
-
         $this->em->clear();
+    }
 
-        $rayon = $this->em->getRepository(Area::class)->find($rayonId);
+    public function update()
+    {
+        dump('-------------> Update');
+        /** @var Area $rayon */
+        $rayon = $this->em->getRepository(Area::class)->findOneByTitle('rayon');
+        $secondFloor = $this->em->getRepository(Area::class)->findOneByTitle('secondFloor');
 
-
-        $rayon->parent = $secondFloor;
+        $rayon->setParent($secondFloor);
         $rayon->setCode('LL');
-        $firstFloor->children->removeElement($rayon);
-        $secondFloor->children->add($rayon);
 
         $this->em->flush();
 

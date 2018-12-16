@@ -10,17 +10,20 @@ namespace AppBundle\Entity;
 
 use AppBundle\Doctrine\Annotation\EntityInherit\EntityInherit;
 use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
+use AppBundle\Doctrine\Annotation\TreePath\TreePath;
 use AppBundle\Doctrine\DomainObject;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use AppBundle\Doctrine\Annotation\StringGenerator\StringGenerator;
 
 /**
  * @ORM\Entity()
  * @ORM\EntityListeners({
  *     "AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener",
  *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener",
- *     "AppBundle\Doctrine\Annotation\TreePath\TreePathListener"
+ *     "AppBundle\Doctrine\Annotation\TreePath\TreePathListener",
+ *     "AppBundle\Doctrine\Annotation\StringGenerator\StringGeneratorListener",
  * })
  */
 class Area extends DomainObject
@@ -47,7 +50,7 @@ class Area extends DomainObject
     /**
      * @SequencedCode(
      *     tree=true,
-     *     comment="on génère une séquence de type AA qui est propre à chaque noeud parent/entity"
+     *     comment="on génère une séquence de type AA qui définit le code de mon area lui même propre à chaque noeud parent/entity"
      * )
      * @ORM\Column(type="string", nullable=true)
      */
@@ -55,16 +58,22 @@ class Area extends DomainObject
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     * @EntityInherit(comment="on hérite de la boutique du parent")
+     * @EntityInherit(comment="on hérite de la boutique du parent afin de rester cohérent")
      */
     public $entity;
 
     /**
+     * @StringGenerator(
+     *     value="area %s",
+     *     vars="code",
+     *     comment="on génère le label de l'emplacement de manière auto au format area {code}"
+     * )
      * @ORM\Column(name="title", type="string", nullable=true)
      */
     public $title;
 
     /**
+     * @TreePath(separator="-", source="code", comment="on génère un fil d'ariane de type A1 - AA à partir du champ code")
      * @ORM\Column(name="path", type="string", nullable=true)
      */
     protected $path;

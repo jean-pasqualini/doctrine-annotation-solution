@@ -14,26 +14,18 @@ use Doctrine\Common\Persistence\ObjectManager;
 
 class SequencedCodeGeneratorListener extends MappedEventListener
 {
-    /** @var ObjectManager */
-    private $om;
-
-    /** @var bool */
-    private $strict;
+    /**
+     * @param $subject
+     * @return bool
+     */
+    public function isParentNodeChange($subject): bool
+    {
+        return $this->isUpdatedFields($subject, ['entity', 'parent']);
+    }
 
     protected function getNamespace()
     {
         return __NAMESPACE__;
-    }
-
-    public function getSubscribedEvents()
-    {
-        return [];
-    }
-
-    public function __construct(ObjectManager $om, bool $strict)
-    {
-        $this->om = $om;
-        $this->strict = $strict;
     }
 
     protected function factoryEntityWrapper($entity, $config)
@@ -41,31 +33,25 @@ class SequencedCodeGeneratorListener extends MappedEventListener
         return new EntityWrapper($entity, $config);
     }
 
-    public function prePersist($subject)
-    {
-        $this->updateCode($subject);
-    }
-
     public function preFlush($subject)
     {
-        $this->updateCode($subject);
-    }
-
-    /**
-     * @param $subject
-     */
-    public function updateCode($subject): void
-    {
-        $config = $this->getConfiguration($this->om, get_class($subject));
-
-        if (!$config) {
+        if ($this->isUpdatedFields($subject, ['code'])) {
             return;
         }
 
-        $entity = $this->factoryEntityWrapper($subject, $config['sequenced_code']);
+        if ($this->isNew($subject) || $this->isParentNodeChange($subject)) {
 
-        $generatedCode = ((string) $entity->getEntity()[0]);
+            $config = $this->getConfiguration($subject);
 
-        $entity->setCode($generatedCode);
+            if (!$this->isEnabled($config, 'sequenced_code')) {
+                return;
+            }
+
+            $entity = $this->factoryEntityWrapper($subject, $config['sequenced_code']);
+
+            $generatedCode = ((string) $entity->getEntity()[0]);
+
+            $entity->setCode($generatedCode);
+        }
     }
 }

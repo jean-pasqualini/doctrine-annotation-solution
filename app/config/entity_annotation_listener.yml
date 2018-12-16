@@ -22,5 +22,7 @@ services:
     AppBundle\Doctrine\Annotation\TreePath\TreePathListener:
         public: true
         autowire: true
+        arguments:
+            $strict: '%kernel.debug%'
         tags:
             - { name: doctrine.orm.entity_listener, lazy: true }

@@ -85,17 +85,60 @@ class Area extends DomainObject
 
     public function setEntity($entity)
     {
+        dump('bb');
+        $this->propertyChanged('entity', $this->entity, $entity);
         $this->entity = $entity;
     }
 
     public function setCode($code)
     {
+        $this->propertyChanged('code', $this->code, $code);
         $this->code = $code;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCode()
+    {
+        return $this->code;
     }
 
     public function getChildren(): Collection
     {
         return $this->children;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param mixed $title
+     */
+    public function setTitle($title): void
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPath()
+    {
+        return $this->path;
+    }
+
+    /**
+     * @param mixed $path
+     */
+    public function setPath($path): void
+    {
+        $this->path = $path;
     }
 
     public function debug()

@@ -48,7 +48,6 @@ class Annotation extends AbstractAnnotationDriver
                 if ($annotation->tree && !$this->isTreeUsable($classInspector)) {
                     return;
                 }
-
                 $config['sequenced_code'] = [
                     'setter' => $codeSetter,
                     'tree' => $annotation->tree

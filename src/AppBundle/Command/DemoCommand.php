@@ -55,13 +55,14 @@ class DemoCommand extends Command
 
         $rayonId = $rayon->id;
 
+
         $this->em->clear();
 
         $rayon = $this->em->getRepository(Area::class)->find($rayonId);
 
-        $shop->entity = 'Maison';
 
         $rayon->parent = $secondFloor;
+        $rayon->setCode('LL');
         $firstFloor->children->removeElement($rayon);
         $secondFloor->children->add($rayon);
 

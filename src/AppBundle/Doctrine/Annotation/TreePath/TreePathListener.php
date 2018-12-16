@@ -9,40 +9,36 @@
 namespace AppBundle\Doctrine\Annotation\TreePath;
 
 
+use AppBundle\Doctrine\Annotation\MappedEventListener;
 use AppBundle\Entity\Area;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Doctrine\Common\PropertyChangedListener;
 
-class TreePathListener
+class TreePathListener extends MappedEventListener implements PropertyChangedListener
 {
-    /** @var EntityManagerInterface */
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
+    /**
+     * @param Area $subject
+     * @return bool
+     */
+    public function isCodeChange(Area $subject): bool
     {
-        $this->em = $em;
+        return $this->isUpdatedFields($subject, ['code']);
     }
 
-    protected function isNew(Area $area)
+    protected function getNamespace()
     {
-        return empty($this->em->getUnitOfWork()->getOriginalEntityData($area));
+        return __NAMESPACE__;
     }
 
-    protected function isUpdatedFields($subject, array $fields)
+    public function postLoad(Area $subject)
     {
-        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
-        foreach ($fields as $field) {
-            if (isset($changeSet[$field])) {
-                return true;
-            }
+        $subject->addPropertyChangedListener($this);
+    }
+
+    public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
+    {
+        if ('code' === $propertyName) {
+            exit('a');
         }
-
-        return false;
-    }
-
-    protected function isUpdated($subject)
-    {
-        return !empty($this->em->getUnitOfWork()->getEntityChangeSet($subject));
     }
 
     public function preFlush(Area $subject)
@@ -51,7 +47,7 @@ class TreePathListener
             return;
         }
 
-        if ($this->isUpdatedFields($subject,['code'])) {
+        if ($this->isNew($subject) || $this->isCodeChange($subject)) {
             $this->updatePath($subject);
             $this->updateChildrenPath($subject);
         }
@@ -59,7 +55,7 @@ class TreePathListener
 
     private function updatePath(Area $subject)
     {
-        $subject->path = $this->generatePath($subject);
+        $subject->setPath($this->generatePath($subject));
     }
 
     private function updateChildrenPath(Area $subject)
@@ -68,16 +64,16 @@ class TreePathListener
         $children = $subject->getChildren();
 
         foreach ($children as $child) {
-            $child->path = $this->generatePath($child);
+            $child->setPath($this->generatePath($child));
         }
     }
 
     private function generatePath(Area $area)
     {
         if (null === $area->getParent()) {
-            return $area->code;
+            return $area->getCode();
         }
 
-        return $this->generatePath($area->getParent()).'-'.$area->code;
+        return $this->generatePath($area->getParent()).'-'.$area->getCode();
     }
 }

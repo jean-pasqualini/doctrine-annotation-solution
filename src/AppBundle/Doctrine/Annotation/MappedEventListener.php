@@ -2,9 +2,11 @@
 
 namespace AppBundle\Doctrine\Annotation;
 
+use AppBundle\Entity\Area;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Mapping\Event\AdapterInterface;
 use Gedmo\Mapping\ExtensionMetadataFactory;
 
@@ -20,8 +22,16 @@ use Gedmo\Mapping\ExtensionMetadataFactory;
  * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-abstract class MappedEventListener implements EventSubscriber
+abstract class MappedEventListener
 {
+    /** @var EntityManagerInterface */
+    protected $em;
+
+    /** @var ObjectManager */
+    protected $om;
+
+    protected $strict;
+
     /**
      * Static List of cached object configurations
      * leaving it static for reasons to look into
@@ -53,11 +63,11 @@ abstract class MappedEventListener implements EventSubscriber
      */
     private $annotationReader;
 
-    /**
-     * Constructor
-     */
-    public function __construct()
+    public function __construct(EntityManagerInterface $em, ObjectManager $om, bool $strict)
     {
+        $this->em = $em;
+        $this->om = $om;
+        $this->strict = $strict;
         $parts = explode('\\', $this->getNamespace());
         $this->name = end($parts);
     }
@@ -67,17 +77,18 @@ abstract class MappedEventListener implements EventSubscriber
      * if cache driver is present it scans it also
      *
      * @param ObjectManager $objectManager
-     * @param string        $class
+     * @param object        $subject
      *
      * @return array
      */
-    public function getConfiguration(ObjectManager $objectManager, $class)
+    public function getConfiguration($subject)
     {
+        $class = get_class($subject);
         $config = array();
         if (isset(self::$configurations[$this->name][$class])) {
             $config = self::$configurations[$this->name][$class];
         } else {
-            $factory = $objectManager->getMetadataFactory();
+            $factory = $this->om->getMetadataFactory();
             $cacheDriver = $factory->getCacheDriver();
             if ($cacheDriver) {
                 $cacheId = ExtensionMetadataFactory::getCacheId($class, $this->getNamespace());
@@ -86,7 +97,7 @@ abstract class MappedEventListener implements EventSubscriber
                     $config = $cached;
                 } else {
                     // re-generate metadata on cache miss
-                    $this->loadMetadataForObjectClass($objectManager, $factory->getMetadataFor($class));
+                    $this->loadMetadataForObjectClass($this->om, $factory->getMetadataFor($class));
                     if (isset(self::$configurations[$this->name][$class])) {
                         $config = self::$configurations[$this->name][$class];
                     }
@@ -94,7 +105,7 @@ abstract class MappedEventListener implements EventSubscriber
 
                 $objectClass = isset($config['useObjectClass']) ? $config['useObjectClass'] : $class;
                 if ($objectClass !== $class) {
-                    $this->getConfiguration($objectManager, $objectClass);
+                    $this->getConfiguration($this->om, $objectClass);
                 }
             }
         }
@@ -170,23 +181,47 @@ abstract class MappedEventListener implements EventSubscriber
      */
     abstract protected function getNamespace();
 
-    /**
-     * Sets the value for a mapped field
-     *
-     * @param AdapterInterface $adapter
-     * @param object $object
-     * @param string $field
-     * @param mixed $oldValue
-     * @param mixed $newValue
-     */
-    protected function setFieldValue(AdapterInterface $adapter, $object, $field, $oldValue, $newValue)
+    protected function isNew(Area $area)
     {
-        $manager = $adapter->getObjectManager();
-        $meta = $manager->getClassMetadata(get_class($object));
-        $uow = $manager->getUnitOfWork();
+        return empty($this->em->getUnitOfWork()->getOriginalEntityData($area));
+    }
 
-        $meta->getReflectionProperty($field)->setValue($object, $newValue);
-        $uow->propertyChanged($object, $field, $oldValue, $newValue);
-        $adapter->recomputeSingleObjectChangeSet($uow, $meta, $object);
+    protected function isUpdatedFields($subject, array $fields)
+    {
+        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
+
+        foreach ($fields as $field) {
+            if (isset($changeSet[$field])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isUpdated($subject)
+    {
+        return !empty($this->em->getUnitOfWork()->getEntityChangeSet($subject));
+    }
+
+
+    /**
+     * @param $config
+     * @throws BadConfigurationAnnotationException
+     */
+    public function throwErrorOnInvalidConfig($config): void
+    {
+        if ($config['error'] ?? false) {
+            throw new BadConfigurationAnnotationException($config['error']);
+        }
+    }
+
+    public function isEnabled($config, $feature) {
+        return isset($config[$feature]);
+    }
+
+    public function isStrictMode()
+    {
+        return $this->strict;
     }
 }

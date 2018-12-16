@@ -11,29 +11,36 @@ namespace AppBundle\Doctrine;
 
 use Doctrine\Common\NotifyPropertyChanged;
 use Doctrine\Common\PropertyChangedListener;
+use Doctrine\ORM\UnitOfWork;
 
 class DomainObject implements NotifyPropertyChanged
 {
-    /** @var PropertyChangedListener */
-    private $listener;
+    /** @var UnitOfWork */
+    private $unitOfWork;
+
+    /** @var PropertyChangedListener[] */
+    private $listener = [];
 
     public function addPropertyChangedListener(PropertyChangedListener $listener)
     {
-        $this->listener = $listener;
+        if ($listener instanceof UnitOfWork) {
+            $this->unitOfWork = $listener;
+        } else {
+            $this->listener[] = $listener;
+        }
     }
 
     public function propertyChanged($property, $oldValue, $newValue)
     {
-        $this->listener->propertyChanged($this, $property, $oldValue, $newValue);
-    }
-
-    public function __set($name, $value)
-    {
-        if ($this->listener) {
-            $this->propertyChanged($name, $this->{$name}, $value);
+        if (!$this->unitOfWork) {
+            return;
         }
 
-        $this->{$name} = $value;
+        $this->unitOfWork->propertyChanged($this, $property, $oldValue, $newValue);
+
+        foreach ($this->listener as $listener) {
+            $listener->propertyChanged($this, $property, $oldValue, $newValue);
+        }
     }
 
     public function __get($name)

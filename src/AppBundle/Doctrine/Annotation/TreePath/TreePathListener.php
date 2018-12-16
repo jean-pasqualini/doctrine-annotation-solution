@@ -11,6 +11,7 @@ namespace AppBundle\Doctrine\Annotation\TreePath;
 
 use AppBundle\Entity\Area;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\PreUpdateEventArgs;
 
 class TreePathListener
 {
@@ -46,30 +47,22 @@ class TreePathListener
 
     public function preFlush(Area $subject)
     {
-        $subject->path = $this->generatePath($subject);
-
-        if ($this->isNew($subject)) {
+        if ($this->isUpdatedFields($subject, ['path'])) {
             return;
         }
 
-        if ($this->isUpdated())
-
-        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
-
-        dump($changeSet);
-
-
-
-
-
+        if ($this->isUpdatedFields($subject,['code'])) {
+            $this->updatePath($subject);
+            $this->updateChildrenPath($subject);
+        }
     }
 
-    private function onCodeChange(Area $subject)
+    private function updatePath(Area $subject)
     {
         $subject->path = $this->generatePath($subject);
     }
 
-    private function onPathChange(Area $subject)
+    private function updateChildrenPath(Area $subject)
     {
         /** @var Area[] $children */
         $children = $subject->getChildren();

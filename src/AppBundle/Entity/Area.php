@@ -49,7 +49,7 @@ class Area extends DomainObject
      * )
      * @ORM\Column(type="string", nullable=true)
      */
-    public $code;
+    protected $code;
 
     /**
      * @ORM\Column(type="string", nullable=true)

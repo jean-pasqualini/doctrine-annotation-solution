@@ -26,7 +26,7 @@ class EntityWrapper
 
     public function setCode($code)
     {
-        $this->entity->{$this->setter}($code);
+        $this->entity->code = $code;
     }
 
     public function getEntity()

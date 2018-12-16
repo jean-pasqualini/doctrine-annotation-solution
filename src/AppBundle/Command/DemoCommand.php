@@ -53,6 +53,12 @@ class DemoCommand extends Command
 
         dump($rayon->debug());
 
+        $rayonId = $rayon->id;
+
+        $this->em->clear();
+
+        $rayon = $this->em->getRepository(Area::class)->find($rayonId);
+
         $shop->entity = 'Maison';
 
         $rayon->parent = $secondFloor;

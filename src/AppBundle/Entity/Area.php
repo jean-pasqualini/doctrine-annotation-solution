@@ -10,6 +10,8 @@ namespace AppBundle\Entity;
 
 use AppBundle\Doctrine\Annotation\EntityInherit\EntityInherit;
 use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -17,7 +19,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity()
  * @ORM\EntityListeners({
  *     "AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener",
- *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener"
+ *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener",
+ *     "AppBundle\Doctrine\Annotation\TreePath\TreePathListener"
  * })
  */
 class Area
@@ -30,9 +33,14 @@ class Area
     public $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Area", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Area", inversedBy="children", cascade={"persist"})
      */
     public $parent;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Area", mappedBy="parent", cascade={"persist"})
+     */
+    public $children;
 
     /**
      * @SequencedCode(
@@ -44,6 +52,7 @@ class Area
     public $code;
 
     /**
+     * @ORM\Column(type="string", nullable=true)
      * @EntityInherit(comment="on hérite de la boutique du parent")
      */
     public $entity;
@@ -53,7 +62,18 @@ class Area
      */
     public $title;
 
-    public function getParent()
+    /**
+     * @ORM\Column(name="path", type="string", nullable=true)
+     */
+    public $path;
+
+    public function __construct($title = null)
+    {
+        $this->title = $title;
+        $this->children = new ArrayCollection();
+    }
+
+    public function getParent(): ?Area
     {
         return $this->parent;
     }
@@ -71,5 +91,21 @@ class Area
     public function setCode($code)
     {
         $this->code = $code;
+    }
+
+    public function getChildren(): Collection
+    {
+        return $this->children;
+    }
+
+    public function debug()
+    {
+        return [
+            'title' => $this->title,
+            'entity' => $this->entity,
+            'code' => $this->code,
+            'path' => $this->path,
+            'parent' => ($this->parent) ? $this->parent->debug() : null,
+        ];
     }
 }

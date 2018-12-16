@@ -7,7 +7,7 @@ services:
         calls:
             - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }
+            - { name: doctrine.orm.entity_listener, lazy: true }
 
     AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
         public: true
@@ -17,4 +17,10 @@ services:
         calls:
             - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
         tags:
-            - { name: doctrine.orm.entity_listener, event: prePersist, lazy: true }
+            - { name: doctrine.orm.entity_listener, lazy: true }
+
+    AppBundle\Doctrine\Annotation\TreePath\TreePathListener:
+        public: true
+        autowire: true
+        tags:
+            - { name: doctrine.orm.entity_listener, lazy: true }

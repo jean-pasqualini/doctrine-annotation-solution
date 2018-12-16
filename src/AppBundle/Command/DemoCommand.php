@@ -10,6 +10,7 @@ namespace AppBundle\Command;
 
 
 use AppBundle\Entity\Area;
+use Doctrine\DBAL\Logging\EchoSQLLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,15 +31,36 @@ class DemoCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $parent = new Area();
-        $parent->entity = 'Auchan';
+        $this->em->getConfiguration()->setSQLLogger(new EchoSQLLogger());
 
-        $area = new Area();
-        $area->parent = $parent;
+        $shop = new Area('shop');
+        $shop->entity = 'Auchan';
 
-        $this->em->persist($area);
+        $firstFloor = new Area('firstFloor');
+        $firstFloor->parent = $shop;
+        $shop->children->add($firstFloor);
+
+        $secondFloor = new Area('secondFloor');
+        $secondFloor->parent = $shop;
+        $shop->children->add($secondFloor);
+
+        $rayon = new Area('rayon');
+        $rayon->parent = $firstFloor;
+        $firstFloor->children->add($rayon);
+
+        $this->em->persist($shop);
         $this->em->flush();
 
-        dump($area);
+        dump($rayon->debug());
+
+        $shop->entity = 'Maison';
+
+        $rayon->parent = $secondFloor;
+        $firstFloor->children->removeElement($rayon);
+        $secondFloor->children->add($rayon);
+
+        $this->em->flush();
+
+        dump($rayon->debug());
     }
 }

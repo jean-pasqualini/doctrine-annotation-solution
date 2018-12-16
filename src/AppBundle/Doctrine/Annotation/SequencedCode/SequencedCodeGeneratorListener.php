@@ -43,6 +43,19 @@ class SequencedCodeGeneratorListener extends MappedEventListener
 
     public function prePersist($subject)
     {
+        $this->updateCode($subject);
+    }
+
+    public function preUpdate($subject)
+    {
+        $this->updateCode($subject);
+    }
+
+    /**
+     * @param $subject
+     */
+    public function updateCode($subject): void
+    {
         $config = $this->getConfiguration($this->om, get_class($subject));
 
         if (!$config) {
@@ -51,7 +64,7 @@ class SequencedCodeGeneratorListener extends MappedEventListener
 
         $entity = $this->factoryEntityWrapper($subject, $config['sequenced_code']);
 
-        $generatedCode = (string) $entity->getEntity();
+        $generatedCode = ((string) $entity->getEntity()[0]);
 
         $entity->setCode($generatedCode);
     }

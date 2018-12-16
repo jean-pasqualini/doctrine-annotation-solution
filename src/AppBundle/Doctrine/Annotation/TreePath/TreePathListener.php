@@ -22,26 +22,61 @@ class TreePathListener
         $this->em = $em;
     }
 
-    public function preUpdate(Area $subject)
+    protected function isNew(Area $area)
+    {
+        return empty($this->em->getUnitOfWork()->getOriginalEntityData($area));
+    }
+
+    protected function isUpdatedFields($subject, array $fields)
+    {
+        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
+        foreach ($fields as $field) {
+            if (isset($changeSet[$field])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isUpdated($subject)
+    {
+        return !empty($this->em->getUnitOfWork()->getEntityChangeSet($subject));
+    }
+
+    public function preFlush(Area $subject)
     {
         $subject->path = $this->generatePath($subject);
 
+        if ($this->isNew($subject)) {
+            return;
+        }
+
+        if ($this->isUpdated())
+
+        $changeSet = $this->em->getUnitOfWork()->getEntityChangeSet($subject);
+
+        dump($changeSet);
+
+
+
+
+
+    }
+
+    private function onCodeChange(Area $subject)
+    {
+        $subject->path = $this->generatePath($subject);
+    }
+
+    private function onPathChange(Area $subject)
+    {
         /** @var Area[] $children */
         $children = $subject->getChildren();
 
         foreach ($children as $child) {
             $child->path = $this->generatePath($child);
-
-            $this->em->getUnitOfWork()->recomputeSingleEntityChangeSet(
-                $this->em->getClassMetadata(get_class($subject)),
-                $subject
-            );
         }
-    }
-
-    public function prePersist(Area $subject)
-    {
-        $subject->path = $this->generatePath($subject);
     }
 
     private function generatePath(Area $area)

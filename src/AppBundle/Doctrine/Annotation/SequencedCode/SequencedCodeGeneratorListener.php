@@ -46,7 +46,7 @@ class SequencedCodeGeneratorListener extends MappedEventListener
         $this->updateCode($subject);
     }
 
-    public function preUpdate($subject)
+    public function preFlush($subject)
     {
         $this->updateCode($subject);
     }

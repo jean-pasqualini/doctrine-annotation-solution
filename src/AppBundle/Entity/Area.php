@@ -10,10 +10,10 @@ namespace AppBundle\Entity;
 
 use AppBundle\Doctrine\Annotation\EntityInherit\EntityInherit;
 use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
+use AppBundle\Doctrine\DomainObject;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity()
@@ -23,7 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *     "AppBundle\Doctrine\Annotation\TreePath\TreePathListener"
  * })
  */
-class Area
+class Area extends DomainObject
 {
     /**
      * @ORM\Column(name="id", type="integer")
@@ -65,7 +65,7 @@ class Area
     /**
      * @ORM\Column(name="path", type="string", nullable=true)
      */
-    public $path;
+    protected $path;
 
     public function __construct($title = null)
     {

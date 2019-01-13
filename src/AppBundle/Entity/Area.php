@@ -188,4 +188,9 @@ class Area extends DomainObject
             'parent' => ($this->parent) ? $this->parent->debug() : null,
         ];
     }
+
+    public function getClass()
+    {
+        return __CLASS__;
+    }
 }

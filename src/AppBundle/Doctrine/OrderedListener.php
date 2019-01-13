@@ -49,12 +49,16 @@ class OrderedListener implements EventSubscriber
 
     public function fetchOrderOperation()
     {
+        $sortedOperation = [];
+
         foreach ($this->fetchClassList() as $class) {
             $this->configurationResolver->init('AppBundle\Doctrine\Annotation\OrderedProcessor');
             $config = $this->configurationResolver->getConfiguration($class)['config'] ?? [];
 
-            return $config['processor_sort'];
+            $sortedOperation[$class] = $config['processor_sort'];
         }
+
+        return $sortedOperation;
     }
 
     public function fetchOperations(): array
@@ -70,7 +74,7 @@ class OrderedListener implements EventSubscriber
                 $config = $this->configurationResolver->getConfiguration($class)['config'] ?? [];
 
                 foreach ($config as $operationName => $operationConfig) {
-                    $operations[$operationName] = [
+                    $operations[$class][$operationName] = [
                         'processor' => get_class($entityProcessor),
                         'config' => $operationConfig,
                     ];
@@ -101,25 +105,38 @@ class OrderedListener implements EventSubscriber
         }
     }
 
-    public function preFlush(PreFlushEventArgs $eventArgs) {
+    public function fetchOperationSorted($operations, $sortOperations): iterable
+    {
+        $operationSortedByClass = [];
 
-        $operations = $this->fetchOperations();
-        $sortOperations = $this->fetchOrderOperation();
-
-        dump($sortOperations);
-
-        $unitOfWork = $eventArgs->getEntityManager()->getUnitOfWork();
-
-        foreach ($this->fetchInsertedEntities($unitOfWork) as $entity) {
-            foreach ($sortOperations as $selectedOperation) {
-                if (isset($operations[$selectedOperation])) {
-                    $this->entityProcessor[$operations[$selectedOperation]['processor']]->process($entity, $operations[$selectedOperation]['config']);
+        foreach ($this->fetchClassList() as $class) {
+            foreach ($sortOperations[$class] as $selectedOperation) {
+                if (isset($operations[$class][$selectedOperation])) {
+                    $operationSortedByClass[$class][] = $operations[$class][$selectedOperation];
                 }
             }
         }
 
+        return $operationSortedByClass;
+    }
+
+    public function preFlush(PreFlushEventArgs $eventArgs)
+    {
+        $operations = $this->fetchOperationSorted(
+            $this->fetchOperations(),
+            $this->fetchOrderOperation()
+        );
+
+        $unitOfWork = $eventArgs->getEntityManager()->getUnitOfWork();
+
+        foreach ($this->fetchInsertedEntities($unitOfWork) as $entity) {
+            foreach ($operations[$entity->getClass()] as $operation) {
+                $this->entityProcessor[$operation['processor']]->process($entity, $operation['config']);
+            }
+        }
+
         foreach ($this->fetchUpdatedEntities($unitOfWork) as $entity) {
-            foreach ($operations as $operation) {
+            foreach ($operations[$entity->getClass()] as $operation) {
                 $this->entityProcessor[$operation['processor']]->process($entity, $operation['config']);
             }
         }

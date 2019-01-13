@@ -33,4 +33,9 @@ abstract class DomainObject
     {
         return null === $this->id;
     }
+
+    public function getClass()
+    {
+        return __CLASS__;
+    }
 }

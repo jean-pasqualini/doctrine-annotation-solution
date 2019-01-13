@@ -9,6 +9,7 @@
 namespace AppBundle\Entity;
 
 use AppBundle\Doctrine\Annotation\EntityInherit\EntityInherit;
+use AppBundle\Doctrine\Annotation\OrderedProcessor\OrderedProcessor;
 use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
 use AppBundle\Doctrine\Annotation\TreePath\TreePath;
 use AppBundle\Doctrine\DomainObject;
@@ -19,12 +20,7 @@ use AppBundle\Doctrine\Annotation\StringGenerator\StringGenerator;
 
 /**
  * @ORM\Entity()
- * @ORM\EntityListeners({
- *     "AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener",
- *     "AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener",
- *     "AppBundle\Doctrine\Annotation\TreePath\TreePathListener",
- *     "AppBundle\Doctrine\Annotation\StringGenerator\StringGeneratorListener",
- * })
+ * @OrderedProcessor(sort={"entity_inherit", "generate_code"})
  */
 class Area extends DomainObject
 {
@@ -50,6 +46,7 @@ class Area extends DomainObject
     /**
      * @SequencedCode(
      *     tree=true,
+     *     tech_key="generate_code",
      *     comment="on génère une séquence de type AA qui définit le code de mon area lui même propre à chaque noeud parent/entity"
      * )
      * @ORM\Column(type="string", nullable=true)
@@ -58,7 +55,7 @@ class Area extends DomainObject
 
     /**
      * @ORM\Column(type="string", nullable=true)
-     * @EntityInherit(comment="on hérite de la boutique du parent afin de rester cohérent")
+     * @EntityInherit(tech_key="entity_inherit", comment="on hérite de la boutique du parent afin de rester cohérent")
      */
     public $entity;
 

@@ -64,6 +64,7 @@ class DemoCommand extends Command
         $firstFloor->addChildren($rayon);
 
         $this->em->persist($shop);
+
         $this->em->flush();
 
         dump($rayon->debug());

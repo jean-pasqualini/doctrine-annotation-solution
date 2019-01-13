@@ -6,7 +6,7 @@
  * Time: 9:56 PM
  */
 
-namespace AppBundle\Doctrine\Annotation\EntityInherit;
+namespace AppBundle\Doctrine\Processor\EntityInherit;
 
 
 class EntityWrapper

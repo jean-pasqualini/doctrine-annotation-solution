@@ -17,4 +17,5 @@ use Doctrine\Common\Annotations\Annotation;
 class EntityInherit extends Annotation
 {
     public $comment = '';
+    public $tech_key;
 }

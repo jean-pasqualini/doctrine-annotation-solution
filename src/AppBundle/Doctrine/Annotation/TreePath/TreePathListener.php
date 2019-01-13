@@ -14,7 +14,7 @@ use AppBundle\Doctrine\DomainObject;
 use AppBundle\Entity\Area;
 use Doctrine\Common\PropertyChangedListener;
 
-class TreePathListener extends MappedEventListener
+class TreePathListener
 {
     /**
      * @param Area $subject

@@ -1,28 +1,44 @@
 services:
-    AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener:
-        public: true
+#    AppBundle\Doctrine\Annotation\EntityInherit\EntityInheritListener:
+#        public: true
+#        autowire: true
+#        arguments:
+#            $strict: '%kernel.debug%'
+#        calls:
+#            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
+#        tags:
+#            - { name: doctrine.orm.entity_listener, lazy: true }
+#
+#    AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
+#        public: true
+#        autowire: true
+#        arguments:
+#            $strict: '%kernel.debug%'
+#        calls:
+#            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
+#        tags:
+#            - { name: doctrine.orm.entity_listener, lazy: true }
+#
+#    AppBundle\Doctrine\Annotation\TreePath\TreePathListener:
+#        public: true
+#        autowire: true
+#        arguments:
+#            $strict: '%kernel.debug%'
+#        tags:
+#            - { name: doctrine.orm.entity_listener, lazy: true }
+
+    AppBundle\Doctrine\ConfigurationResolver:
+        public: false
         autowire: true
-        arguments:
-            $strict: '%kernel.debug%'
         calls:
             - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
-        tags:
-            - { name: doctrine.orm.entity_listener, lazy: true }
+        arguments:
+            $strict: '%kernel.debug%'
 
-    AppBundle\Doctrine\Annotation\SequencedCode\SequencedCodeGeneratorListener:
+    AppBundle\Doctrine\OrderedListener:
         public: true
         autowire: true
         arguments:
-            $strict: '%kernel.debug%'
-        calls:
-            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
+            $entityProcessors: []
         tags:
-            - { name: doctrine.orm.entity_listener, lazy: true }
-
-    AppBundle\Doctrine\Annotation\TreePath\TreePathListener:
-        public: true
-        autowire: true
-        arguments:
-            $strict: '%kernel.debug%'
-        tags:
-            - { name: doctrine.orm.entity_listener, lazy: true }
+            - { name: doctrine.event_subscriber, lazy: true }

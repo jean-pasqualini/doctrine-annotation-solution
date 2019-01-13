@@ -6,8 +6,7 @@
  * Time: 9:56 PM
  */
 
-namespace AppBundle\Doctrine\Annotation\SequencedCode;
-
+namespace AppBundle\Doctrine\Processor\SequencedCode;
 
 class EntityWrapper
 {

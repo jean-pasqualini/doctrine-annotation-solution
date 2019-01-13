@@ -1,33 +1,20 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: darkilliant
+ * Date: 1/13/19
+ * Time: 9:20 AM
+ */
 
-namespace AppBundle\Doctrine\Annotation;
+namespace AppBundle\Doctrine;
 
-use AppBundle\Doctrine\DomainObject;
-use AppBundle\Entity\Area;
-use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\EventSubscriber;
+
+use AppBundle\Doctrine\Annotation\BadConfigurationAnnotationException;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Gedmo\Mapping\Event\AdapterInterface;
 use Gedmo\Mapping\ExtensionMetadataFactory;
 
-/**
- * This is extension of event subscriber class and is
- * used specifically for handling the extension metadata
- * mapping for extensions.
- *
- * It dries up some reusable code which is common for
- * all extensions who maps additional metadata through
- * extended drivers
- *
- * @author Gediminas Morkevicius <gediminas.morkevicius@gmail.com>
- * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
- */
-abstract class MappedEventListener
+class ConfigurationResolver
 {
-    /** @var EntityManagerInterface */
-    protected $em;
-
     /** @var ObjectManager */
     protected $om;
 
@@ -64,13 +51,23 @@ abstract class MappedEventListener
      */
     private $annotationReader;
 
-    public function __construct(EntityManagerInterface $em, ObjectManager $om, bool $strict)
+    private $namespace;
+
+    public function __construct(ObjectManager $om, bool $strict)
     {
-        $this->em = $em;
         $this->om = $om;
         $this->strict = $strict;
-        $parts = explode('\\', $this->getNamespace());
+    }
+
+    public function init($namespace) {
+        $this->namespace = $namespace;
+        $parts = explode('\\', $namespace);
         $this->name = end($parts);
+    }
+
+    public function getNamespace()
+    {
+        return $this->namespace;
     }
 
     /**
@@ -82,9 +79,8 @@ abstract class MappedEventListener
      *
      * @return array
      */
-    public function getConfiguration($subject)
+    public function getConfiguration($class)
     {
-        $class = get_class($subject);
         $config = array();
         if (isset(self::$configurations[$this->name][$class])) {
             $config = self::$configurations[$this->name][$class];
@@ -123,7 +119,7 @@ abstract class MappedEventListener
      */
     public function getExtensionMetadataFactory(ObjectManager $objectManager)
     {
-        $oid = spl_object_hash($objectManager);
+        $oid = spl_object_hash($objectManager).'_'.$this->getNamespace();
         if (!isset($this->extensionMetadataFactory[$oid])) {
             $this->extensionMetadataFactory[$oid] = new ExtensionMetadataFactory(
                 $objectManager,
@@ -172,15 +168,6 @@ abstract class MappedEventListener
             self::$configurations[$this->name][$metadata->name] = $config;
         }
     }
-
-    /**
-     * Get the namespace of extension event subscriber.
-     * used for cache id of extensions also to know where
-     * to find Mapping drivers and event adapters
-     *
-     * @return string
-     */
-    abstract protected function getNamespace();
 
     /**
      * @param $config

@@ -19,4 +19,5 @@ class SequencedCode extends Annotation
 {
     public $tree = false;
     public $comment = '';
+    public $tech_key;
 }

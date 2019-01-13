@@ -6,14 +6,15 @@
  * Time: 10:22 PM
  */
 
-namespace AppBundle\Doctrine\Annotation\SequencedCode;
+namespace AppBundle\Doctrine\Processor\SequencedCode;
 
 
 use AppBundle\Doctrine\Annotation\MappedEventListener;
 use AppBundle\Doctrine\DomainObject;
+use AppBundle\Doctrine\Processor\DoctrineProcessorInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 
-class SequencedCodeGeneratorListener extends MappedEventListener
+class SequencedCodeGeneratorProcessor implements DoctrineProcessorInterface
 {
     /**
      * @param $subject
@@ -38,9 +39,9 @@ class SequencedCodeGeneratorListener extends MappedEventListener
         return $subject->isPropertyChanged('code');
     }
 
-    protected function getNamespace()
+    public function getAnnotationNamespace(): string
     {
-        return __NAMESPACE__;
+        return 'AppBundle\Doctrine\Annotation\SequencedCode';
     }
 
     protected function factoryEntityWrapper($entity, $config)
@@ -48,21 +49,14 @@ class SequencedCodeGeneratorListener extends MappedEventListener
         return new EntityWrapper($entity, $config);
     }
 
-    public function preFlush($subject)
+    public function process(DomainObject $subject, array $config)
     {
         if ($this->isCodeAlreadyUpdated($subject)) {
             return;
         }
 
         if ($this->isNew($subject) || $this->isParentNodeChange($subject)) {
-
-            $config = $this->getConfiguration($subject);
-
-            if (!$this->isEnabled($config, 'sequenced_code')) {
-                return;
-            }
-
-            $entity = $this->factoryEntityWrapper($subject, $config['sequenced_code']);
+            $entity = $this->factoryEntityWrapper($subject, $config);
 
             $generatedCode = ((string) $entity->getEntity()[0]);
 

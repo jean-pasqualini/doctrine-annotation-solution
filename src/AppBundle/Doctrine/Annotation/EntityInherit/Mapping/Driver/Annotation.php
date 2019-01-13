@@ -46,6 +46,7 @@ class Annotation extends AbstractAnnotationDriver
         }
 
         foreach ($classInspector->getProperties() as $propertyInspector) {
+            /** @var EntityInherit $annotation */
             $annotation = $this
                 ->getReader()
                 ->getPropertyAnnotation(
@@ -53,8 +54,8 @@ class Annotation extends AbstractAnnotationDriver
                     EntityInherit::class
                 );
 
-            if ($annotation) {
-                $config['entity_inherit'] = true;
+            if ($annotation && $annotation->tech_key) {
+                $config['config'][$annotation->tech_key] = [];
                 return;
             }
         }

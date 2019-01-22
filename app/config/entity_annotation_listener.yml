@@ -27,18 +27,28 @@ services:
 #        tags:
 #            - { name: doctrine.orm.entity_listener, lazy: true }
 
-    AppBundle\Doctrine\ConfigurationResolver:
+    AppBundle\Doctrine\Processor\EntityInherit\EntityInheritProcessor:
+        lazy: true
+        tags:
+            - { name: entity_processor }
+
+    AppBundle\Doctrine\Processor\SequencedCode\SequencedCodeGeneratorProcessor:
+        lazy: true
+        tags:
+            - { name: entity_processor }
+
+    AppBundle\Doctrine\EntityProcessorRegistry:
+        arguments:
+            $entityProcessors: !tagged entity_processor
+
+    AppBundle\Doctrine\AnnotationConfigurationResolver:
         public: false
         autowire: true
-        calls:
-            - ['setAnnotationReader', ['@Doctrine\Common\Annotations\Reader']]
-        arguments:
-            $strict: '%kernel.debug%'
 
-    AppBundle\Doctrine\OrderedListener:
+    AppBundle\Doctrine\EntityProcessorOrchestrator:
         public: true
         autowire: true
         arguments:
-            $entityProcessors: []
+            $entityClass: AppBundle\Entity\Area
         tags:
-            - { name: doctrine.event_subscriber, lazy: true }
+            - { name: doctrine.orm.entity_listener, event: preFlush, entity: AppBundle\Entity\Area, lazy: true }

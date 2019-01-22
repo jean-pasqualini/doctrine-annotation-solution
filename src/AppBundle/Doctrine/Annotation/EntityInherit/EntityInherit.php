@@ -18,4 +18,9 @@ class EntityInherit extends Annotation
 {
     public $comment = '';
     public $tech_key;
+
+    public static function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
 }

@@ -17,4 +17,14 @@ use Doctrine\Common\Annotations\Annotation;
 class OrderedProcessor extends Annotation
 {
     public $sort = [];
+
+    public static function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
+
+    public static function getName()
+    {
+        return 'ordered_procesor';
+    }
 }

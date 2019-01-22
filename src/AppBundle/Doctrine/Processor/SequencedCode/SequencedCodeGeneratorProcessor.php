@@ -1,18 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: darkilliant
- * Date: 12/14/18
- * Time: 10:22 PM
- */
 
 namespace AppBundle\Doctrine\Processor\SequencedCode;
 
-
 use AppBundle\Doctrine\Annotation\MappedEventListener;
+use AppBundle\Doctrine\Annotation\SequencedCode\SequencedCode;
 use AppBundle\Doctrine\DomainObject;
 use AppBundle\Doctrine\Processor\DoctrineProcessorInterface;
-use Doctrine\Common\Persistence\ObjectManager;
 
 class SequencedCodeGeneratorProcessor implements DoctrineProcessorInterface
 {
@@ -39,11 +32,6 @@ class SequencedCodeGeneratorProcessor implements DoctrineProcessorInterface
         return $subject->isPropertyChanged('code');
     }
 
-    public function getAnnotationNamespace(): string
-    {
-        return 'AppBundle\Doctrine\Annotation\SequencedCode';
-    }
-
     protected function factoryEntityWrapper($entity, $config)
     {
         return new EntityWrapper($entity, $config);
@@ -62,5 +50,20 @@ class SequencedCodeGeneratorProcessor implements DoctrineProcessorInterface
 
             $entity->setCode($generatedCode);
         }
+    }
+
+    public static function getNamespace()
+    {
+        return SequencedCode::getNamespace();
+    }
+
+    public static function getClass()
+    {
+        return __CLASS__;
+    }
+
+    public static function getName()
+    {
+        return 'sequenced_code';
     }
 }

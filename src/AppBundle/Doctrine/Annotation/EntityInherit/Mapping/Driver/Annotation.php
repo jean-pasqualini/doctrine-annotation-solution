@@ -55,7 +55,7 @@ class Annotation extends AbstractAnnotationDriver
                 );
 
             if ($annotation && $annotation->tech_key) {
-                $config['config'][$annotation->tech_key] = [];
+                $config['operations'][$annotation->tech_key] = [];
                 return;
             }
         }

@@ -13,7 +13,5 @@ use AppBundle\Doctrine\DomainObject;
 
 interface DoctrineProcessorInterface
 {
-    public function getAnnotationNamespace(): string;
-
     public function process(DomainObject $object, array $configuration);
 }

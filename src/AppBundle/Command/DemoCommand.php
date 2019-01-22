@@ -10,11 +10,13 @@ namespace AppBundle\Command;
 
 
 use AppBundle\Entity\Area;
+use AppBundle\Entity\Commande;
 use Doctrine\DBAL\Logging\EchoSQLLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Lock\Factory;
 
 class DemoCommand extends Command
 {
@@ -23,66 +25,33 @@ class DemoCommand extends Command
     /** @var EntityManagerInterface */
     private $em;
 
-    public function __construct(EntityManagerInterface $em)
+    /** @var Factory */
+    private $lockFactory;
+
+    public function __construct(EntityManagerInterface $em, Factory $lockFactory)
     {
         $this->em = $em;
+        $this->lockFactory = $lockFactory;
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->delete();
-        $this->create();
-        $this->update();
-    }
+        $lock = $this->lockFactory->createLock('command_order_number_generator', 300);
 
-    public function delete()
-    {
-        /** @var Area[] $areas */
-        $areas = $this->em->getRepository(Area::class)->findAll();
+        $lock->acquire(true);
 
-        foreach ($areas as $area) {
-            $this->em->remove($area);
-        }
+        $last = $this->em->getRepository(Commande::class)->getLastId();
 
-        $this->em->flush();
-    }
+        $next = ($last) ? ++$last : 'order-000000000001';
 
-    public function create()
-    {
+        $order = new Commande();
 
-        dump('-------------> Create');
-        $shop = new Area('shop');
-        $shop->entity = 'Auchan';
+        $order->orderNumber = $next;
 
-        $firstFloor = new Area('firstFloor');
-        $secondFloor = new Area('secondFloor');
-        $shop->addChildren($firstFloor);
-        $shop->addChildren($secondFloor);
-
-        $rayon = new Area('rayon');
-        $firstFloor->addChildren($rayon);
-
-        $this->em->persist($shop);
+        $this->em->persist($order);
         $this->em->flush();
 
-        dump($rayon->debug());
-
-        $this->em->clear();
-    }
-
-    public function update()
-    {
-        dump('-------------> Update');
-        /** @var Area $rayon */
-        $rayon = $this->em->getRepository(Area::class)->findOneByTitle('rayon');
-        $secondFloor = $this->em->getRepository(Area::class)->findOneByTitle('secondFloor');
-
-        $rayon->setParent($secondFloor);
-        $rayon->setCode('LL');
-
-        $this->em->flush();
-
-        dump($rayon->debug());
+        $lock->release();
     }
 }

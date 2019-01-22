@@ -20,6 +20,7 @@ framework:
     #serializer: { enable_annotations: true }
     default_locale: '%locale%'
     trusted_hosts: ~
+    lock: 'flock'
     session:
         # https://symfony.com/doc/current/reference/configuration/framework.html#handler-id
         handler_id: session.handler.native_file
